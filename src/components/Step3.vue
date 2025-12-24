@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3>使用</h3>
-    <p>先设置用户token和仓库路劲</p>
+    <p>先设置用户token和仓库路径</p>
 
     <img
       src="https://cdn.jsdelivr.net/gh/WishMelz/file/image/set.png"

@@ -116,7 +116,7 @@ export default {
     }
   },
   methods: {
-    //   确定仓库路劲
+    //   确定仓库路径
     setUploadInfo() {
       this.$store.commit("setUploadInfo", this.upForm);
       this.$message.success("设置成功");

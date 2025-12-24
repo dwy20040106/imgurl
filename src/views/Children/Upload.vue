@@ -160,7 +160,7 @@ export default {
     postUploadApi(name, base64) {
       let _this = this;
       let urlInfo = {};
-      // 判断是否自定义路劲
+      // 判断是否自定义路径
       if (!this.upForm.iscant) {
         urlInfo = {
           name: this.userInfo.login,

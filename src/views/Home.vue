@@ -1,10 +1,5 @@
 <template>
   <el-container>
-    <el-header style="" class="header-info">
-      <div class="item active">
-        图床
-      </div>
-    </el-header>
     <el-container>
       <el-aside :width="isCollapse ? '64px' : '200px'" class="sidebar-aside">
         <el-menu

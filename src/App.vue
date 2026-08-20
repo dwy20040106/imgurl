@@ -4,6 +4,20 @@
   </div>
 </template>
 
+<script>
+import { getUserInfo } from '@/api/user'
+
+export default {
+  created() {
+    if (!this.$store.state.userInfo.login) {
+      getUserInfo().then(res => {
+        this.$store.commit('setUserInfo', res)
+      }).catch(() => {})
+    }
+  }
+}
+</script>
+
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

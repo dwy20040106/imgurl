@@ -61,7 +61,7 @@
         </div>
       </el-col>
     </el-row>
-    <div class="dialog" v-if="dialogTableVisible" @click="diaClose" @wheel="onWheel">
+    <div class="dialog" ref="dialog" v-if="dialogTableVisible" @click="diaClose" @wheel="onWheel">
       <div class="dialog-close" @click.stop="diaClose">
         <i class="el-icon-circle-close"></i>
       </div>
@@ -72,16 +72,18 @@
       </div>
       <img
         class="diaimg"
+        :class="{ 'diaimg-smooth': !isDragging && !isPinching, 'diaimg-direct': isDragging || isPinching }"
         :src="dialogUrl"
         @click.stop
         @mousedown="startDrag"
         @mousemove="onDrag"
         @mouseup="endDrag"
         @mouseleave="endDrag"
-        @touchstart="startDrag"
-        @touchmove="onDrag"
-        @touchend="endDrag"
-        :style="{ transform: 'translate(' + dialogX + 'px, ' + dialogY + 'px) scale(' + dialogScale + ')', cursor: dialogScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }"
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
+        @dblclick="onDblClick"
+        :style="{ transform: 'translate(' + dialogX + 'px, ' + dialogY + 'px) scale(' + dialogScale + ')', cursor: dialogScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }"
       />
     </div>
   </div>
@@ -114,6 +116,9 @@ export default {
       isDragging: false,
       dragStartX: 0,
       dragStartY: 0,
+      isPinching: false,
+      pinchStartDist: 0,
+      pinchStartScale: 1,
     };
   },
   created() {
@@ -129,6 +134,8 @@ export default {
       this.dialogScale = 1;
       this.dialogX = 0;
       this.dialogY = 0;
+      this.isDragging = false;
+      this.isPinching = false;
     },
     diaClose() {
       this.dialogTableVisible = false;
@@ -137,42 +144,122 @@ export default {
       this.dialogX = 0;
       this.dialogY = 0;
       this.isDragging = false;
+      this.isPinching = false;
     },
     zoomIn() {
-      this.dialogScale += 0.2;
+      this.dialogScale = Math.min(5, this.dialogScale + 0.2);
     },
     zoomOut() {
-      this.dialogScale = Math.max(0.5, this.dialogScale - 0.2);
+      var s = Math.max(0.5, this.dialogScale - 0.2);
+      this.dialogScale = s;
+      if (s <= 1) { this.dialogX = 0; this.dialogY = 0; }
     },
     zoomReset() {
       this.dialogScale = 1;
       this.dialogX = 0;
       this.dialogY = 0;
     },
+    // 鼠标拖拽
     startDrag(e) {
       if (this.dialogScale <= 1) return;
       this.isDragging = true;
-      var touch = e.touches ? e.touches[0] : e;
-      this.dragStartX = touch.clientX - this.dialogX;
-      this.dragStartY = touch.clientY - this.dialogY;
+      this.dragStartX = e.clientX - this.dialogX;
+      this.dragStartY = e.clientY - this.dialogY;
     },
     onDrag(e) {
       if (!this.isDragging) return;
       e.preventDefault();
-      var touch = e.touches ? e.touches[0] : e;
-      this.dialogX = touch.clientX - this.dragStartX;
-      this.dialogY = touch.clientY - this.dragStartY;
+      this.dialogX = e.clientX - this.dragStartX;
+      this.dialogY = e.clientY - this.dragStartY;
     },
     endDrag() {
       this.isDragging = false;
     },
+    // 滚轮缩放（以鼠标位置为中心）
     onWheel(e) {
       e.preventDefault();
-      if (e.deltaY < 0) {
-        this.dialogScale += 0.1;
+      var el = this.$refs.dialog;
+      if (!el) return;
+      var rect = el.getBoundingClientRect();
+      var cx = e.clientX - rect.left - rect.width / 2;
+      var cy = e.clientY - rect.top - rect.height / 2;
+      var oldScale = this.dialogScale;
+      var delta = e.deltaY < 0 ? 0.15 : -0.15;
+      var newScale = Math.max(0.5, Math.min(5, oldScale + delta));
+      var ratio = newScale / oldScale;
+      this.dialogX = cx - (cx - this.dialogX) * ratio;
+      this.dialogY = cy - (cy - this.dialogY) * ratio;
+      this.dialogScale = newScale;
+      if (newScale <= 1) { this.dialogX = 0; this.dialogY = 0; }
+    },
+    // 双击切换缩放
+    onDblClick(e) {
+      if (this.dialogScale > 1) {
+        this.dialogScale = 1;
+        this.dialogX = 0;
+        this.dialogY = 0;
       } else {
-        this.dialogScale = Math.max(0.5, this.dialogScale - 0.1);
+        var el = this.$refs.dialog;
+        if (el) {
+          var rect = el.getBoundingClientRect();
+          var cx = e.clientX - rect.left - rect.width / 2;
+          var cy = e.clientY - rect.top - rect.height / 2;
+          this.dialogScale = 2.5;
+          this.dialogX = cx - cx * 2.5;
+          this.dialogY = cy - cy * 2.5;
+        } else {
+          this.dialogScale = 2.5;
+        }
       }
+    },
+    // 触摸事件
+    onTouchStart(e) {
+      if (e.touches.length === 1) {
+        if (this.dialogScale > 1) {
+          this.isDragging = true;
+          var t = e.touches[0];
+          this.dragStartX = t.clientX - this.dialogX;
+          this.dragStartY = t.clientY - this.dialogY;
+        }
+      } else if (e.touches.length === 2) {
+        this.isDragging = false;
+        this.isPinching = true;
+        this.pinchStartDist = this.getTouchDist(e.touches);
+        this.pinchStartScale = this.dialogScale;
+      }
+    },
+    onTouchMove(e) {
+      if (this.isPinching && e.touches.length === 2) {
+        e.preventDefault();
+        var dist = this.getTouchDist(e.touches);
+        var scale = this.pinchStartScale * (dist / this.pinchStartDist);
+        this.dialogScale = Math.max(0.5, Math.min(5, scale));
+        if (this.dialogScale <= 1) { this.dialogX = 0; this.dialogY = 0; }
+      } else if (this.isDragging && e.touches.length === 1) {
+        e.preventDefault();
+        var t = e.touches[0];
+        this.dialogX = t.clientX - this.dragStartX;
+        this.dialogY = t.clientY - this.dragStartY;
+      }
+    },
+    onTouchEnd(e) {
+      if (e.touches.length === 0) {
+        this.isDragging = false;
+        this.isPinching = false;
+      } else if (e.touches.length === 1 && this.isPinching) {
+        this.isPinching = false;
+        if (this.dialogScale > 1) {
+          var t = e.touches[0];
+          this.dragStartX = t.clientX - this.dialogX;
+          this.dragStartY = t.clientY - this.dialogY;
+          this.isDragging = true;
+        }
+      }
+    },
+    getTouchDist(touches) {
+      var dx = touches[0].clientX - touches[1].clientX;
+      var dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
     },
     // 默认选中操作
     defSelect() {
@@ -391,9 +478,15 @@ export default {
   max-width: 85%;
   max-height: 85vh;
   object-fit: contain;
-  transition: transform 0.2s;
   user-select: none;
   -webkit-user-drag: none;
+  will-change: transform;
+}
+.diaimg-smooth {
+  transition: transform 0.25s ease-out;
+}
+.diaimg-direct {
+  transition: none;
 }
 .switchUrl {
   margin-left: 20px;

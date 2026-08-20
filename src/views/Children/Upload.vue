@@ -27,13 +27,34 @@
            </el-input>
            <span style="vertical-align: sub;font-size:10px;font-style: italic;">签名就是 <b>![]</b> 中的字</span>
         </div>
-       
       </el-col>
       <el-col style="padding-top: 30px">
         <el-radio v-model="nameType" label="1">使用源文件名字</el-radio>
         <el-radio v-model="nameType" label="2">使用加密文件名字</el-radio>
       </el-col>
     </el-row>
+
+    <el-divider></el-divider>
+
+    <el-row v-if="pendingFile" style="padding-top: 10px">
+      <el-col :span="24" :md="12">
+        <div class="preview-box">
+          <img :src="pendingFile.preview" class="preview-img" />
+        </div>
+      </el-col>
+      <el-col :span="24" :md="12" style="padding-top: 10px">
+        <el-input v-model="customName" placeholder="请输入文件名（含后缀，如 abc.png）">
+          <template slot="prepend">文件名</template>
+        </el-input>
+        <el-button
+          type="primary"
+          @click="confirmUpload"
+          style="margin-top: 15px"
+          >上传</el-button
+        >
+      </el-col>
+    </el-row>
+
     <el-divider></el-divider>
     <el-row>
       <el-col :span="24" :md="16" class="resimg">
@@ -81,7 +102,9 @@ export default {
       userInfo: {},
       resUrl: "",
       resData: [],
-      sign:"wishimg"
+      sign: "wishimg",
+      pendingFile: null,
+      customName: "",
     };
   },
   created() {
@@ -93,34 +116,29 @@ export default {
   mounted() {
     let _this = this;
     document.addEventListener("paste", function (event) {
-      var isChrome = false;
       if (event.clipboardData || event.originalEvent) {
-        //某些chrome版本使用的是event.originalEvent
         var clipboardData =
           event.clipboardData || event.originalEvent.clipboardData;
         if (clipboardData.items) {
-          // for chrome
           var items = clipboardData.items,
             len = items.length,
             blob = null;
-          isChrome = true;
           for (var i = 0; i < len; i++) {
             if (items[i].type.indexOf("image") !== -1) {
-              //getAsFile() 此方法只是living standard firefox ie11 并不支持
               blob = items[i].getAsFile();
             }
           }
           if (blob !== null) {
             var reader = new FileReader();
             reader.readAsDataURL(blob);
-            //base64码显示
             reader.onload = function (event) {
-              // event.target.result 即为图片的Base64编码字符串
               var base64_str = event.target.result;
-              _this.postUploadApi(
-                md5(Math.random()) + ".png",
-                base64_str.split(",")[1]
-              );
+              _this.pendingFile = {
+                originalName: "pasted.png",
+                base64: base64_str.split(",")[1],
+                preview: base64_str,
+              };
+              _this.customName = "";
             };
           }
         }
@@ -128,11 +146,9 @@ export default {
     });
   },
   methods: {
-    //签名
-    signInput(v){
-       this.$store.commit("setSign", v);
+    signInput(v) {
+      this.$store.commit("setSign", v);
     },
-    // 复制内容
     copy(val) {
       if (val == "" || !val) {
         return;
@@ -153,14 +169,26 @@ export default {
       reader.readAsDataURL(file);
       let _this = this;
       reader.onload = function () {
-        _this.postUploadApi(file.name, reader.result.split(",")[1]);
+        _this.pendingFile = {
+          originalName: file.name,
+          base64: reader.result.split(",")[1],
+          preview: reader.result,
+        };
+        _this.customName = file.name;
       };
       return false;
+    },
+    confirmUpload() {
+      if (!this.pendingFile) {
+        this.$message.warning("请先选择图片");
+        return;
+      }
+      var fileName = this.customName || this.pendingFile.originalName;
+      this.postUploadApi(fileName, this.pendingFile.base64);
     },
     postUploadApi(name, base64) {
       let _this = this;
       let urlInfo = {};
-      // 判断是否自定义路径
       if (!this.upForm.iscant) {
         urlInfo = {
           name: this.userInfo.login,
@@ -175,7 +203,6 @@ export default {
         };
       }
       let file_last = name.replace(/.+\./, "");
-      //   判断文件名加密方式
       let fileName = "";
       if (this.nameType == "1") {
         fileName = name;
@@ -197,14 +224,15 @@ export default {
           _this.resData[0] = res.content.download_url;
           if (_this.upForm.iscant) {
             _this.resData[1] = `https://cdn.jsdelivr.net/gh/${_this.userInfo.login}/${_this.upForm.repos}@${_this.upForm.branch}${_this.upForm.delimit}/${res.content.name}`;
-          _this.resData[2] = `![${this.sign}](https://cdn.jsdelivr.net/gh/${_this.userInfo.login}/${_this.upForm.repos}@${_this.upForm.branch}${_this.upForm.delimit}/${res.content.name})`;
+            _this.resData[2] = `![${_this.sign}](https://cdn.jsdelivr.net/gh/${_this.userInfo.login}/${_this.upForm.repos}@${_this.upForm.branch}${_this.upForm.delimit}/${res.content.name})`;
           } else {
             _this.resData[1] = `https://cdn.jsdelivr.net/gh/${_this.userInfo.login}/${_this.upForm.repos}@${_this.upForm.branch}${_this.upForm.content}/${res.content.name}`;
-            _this.resData[2] = `![${this.sign}](https://cdn.jsdelivr.net/gh/${_this.userInfo.login}/${_this.upForm.repos}@${_this.upForm.branch}${_this.upForm.content}/${res.content.name})`;
+            _this.resData[2] = `![${_this.sign}](https://cdn.jsdelivr.net/gh/${_this.userInfo.login}/${_this.upForm.repos}@${_this.upForm.branch}${_this.upForm.content}/${res.content.name})`;
           }
-
           _this.fullscreenLoading = false;
           _this.$message.success("上传成功");
+          _this.pendingFile = null;
+          _this.customName = "";
         })
         .catch((err) => {
           console.log(err);
@@ -225,6 +253,16 @@ export default {
 }
 .tag-group .el-input {
   margin-top: 5px;
+}
+.preview-box {
+  text-align: center;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  padding: 10px;
+}
+.preview-img {
+  max-width: 100%;
+  max-height: 300px;
 }
 .resimg img {
   max-width: 100%;

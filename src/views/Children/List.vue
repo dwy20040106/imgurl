@@ -74,7 +74,14 @@
         class="diaimg"
         :src="dialogUrl"
         @click.stop
-        :style="{ transform: 'scale(' + dialogScale + ')' }"
+        @mousedown="startDrag"
+        @mousemove="onDrag"
+        @mouseup="endDrag"
+        @mouseleave="endDrag"
+        @touchstart="startDrag"
+        @touchmove="onDrag"
+        @touchend="endDrag"
+        :style="{ transform: 'translate(' + dialogX + 'px, ' + dialogY + 'px) scale(' + dialogScale + ')', cursor: dialogScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }"
       />
     </div>
   </div>
@@ -102,6 +109,11 @@ export default {
       isjsDeliver: false,
       sign:"",
       dialogScale: 1,
+      dialogX: 0,
+      dialogY: 0,
+      isDragging: false,
+      dragStartX: 0,
+      dragStartY: 0,
     };
   },
   created() {
@@ -115,11 +127,16 @@ export default {
       this.dialogTableVisible = true;
       this.dialogUrl = v;
       this.dialogScale = 1;
+      this.dialogX = 0;
+      this.dialogY = 0;
     },
     diaClose() {
       this.dialogTableVisible = false;
       this.dialogUrl = "";
       this.dialogScale = 1;
+      this.dialogX = 0;
+      this.dialogY = 0;
+      this.isDragging = false;
     },
     zoomIn() {
       this.dialogScale += 0.2;
@@ -129,6 +146,25 @@ export default {
     },
     zoomReset() {
       this.dialogScale = 1;
+      this.dialogX = 0;
+      this.dialogY = 0;
+    },
+    startDrag(e) {
+      if (this.dialogScale <= 1) return;
+      this.isDragging = true;
+      var touch = e.touches ? e.touches[0] : e;
+      this.dragStartX = touch.clientX - this.dialogX;
+      this.dragStartY = touch.clientY - this.dialogY;
+    },
+    onDrag(e) {
+      if (!this.isDragging) return;
+      e.preventDefault();
+      var touch = e.touches ? e.touches[0] : e;
+      this.dialogX = touch.clientX - this.dragStartX;
+      this.dialogY = touch.clientY - this.dragStartY;
+    },
+    endDrag() {
+      this.isDragging = false;
     },
     // 默认选中操作
     defSelect() {

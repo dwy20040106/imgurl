@@ -61,7 +61,7 @@
         </div>
       </el-col>
     </el-row>
-    <div class="dialog" v-if="dialogTableVisible" @click="diaClose">
+    <div class="dialog" v-if="dialogTableVisible" @click="diaClose" @wheel="onWheel">
       <div class="dialog-close" @click.stop="diaClose">
         <i class="el-icon-circle-close"></i>
       </div>
@@ -165,6 +165,14 @@ export default {
     },
     endDrag() {
       this.isDragging = false;
+    },
+    onWheel(e) {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        this.dialogScale += 0.1;
+      } else {
+        this.dialogScale = Math.max(0.5, this.dialogScale - 0.1);
+      }
     },
     // 默认选中操作
     defSelect() {

@@ -114,17 +114,11 @@ export default {
     } else {
       this.searchUser();
     }
-    if (this.upForm.repos != "" && this.upForm.repos) {
-      this.selectRepos(this.upForm.repos);
-    }
   },
   methods: {
-    //   确定仓库路径
     setUploadInfo() {
       this.$store.commit("setUploadInfo", this.upForm);
-      this.$message.success("设置成功");
     },
-    // 获取用户信息
     searchUser() {
       this.fullscreenLoading = true;
       getUserInfo()
@@ -147,19 +141,20 @@ export default {
           console.log(err);
         });
     },
-    // 获取用户仓库
     getRepos(name) {
       getUserRepos(name)
         .then((res) => {
           this.reposList = res;
+          if (res.length >= 2) {
+            this.upForm.repos = res[1].name;
+            this.selectRepos(res[1].name);
+          }
         })
         .catch((err) => {
           console.log(err);
         });
     },
-    // 获取目录
     selectRepos(v) {
-      //拿到默认分支
       getReposBranch(this.userInfo.login, v).then((res) => {
         this.upForm.branch = res.default_branch;
       });
@@ -180,6 +175,10 @@ export default {
             }
           });
           this.reposContents = data;
+          if (data.length >= 3) {
+            this.upForm.content = data[2].val;
+          }
+          this.setUploadInfo();
         })
         .catch((err) => {
           console.log(err);

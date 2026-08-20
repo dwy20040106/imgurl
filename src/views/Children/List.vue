@@ -284,4 +284,19 @@ export default {
 .switchUrl {
   margin-left: 20px;
 }
+@media (max-width: 768px) {
+  .item {
+    width: 150px;
+  }
+  .el-select {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  .switchUrl {
+    margin-left: 0;
+  }
+  .imgerr {
+    text-align: left;
+  }
+}
 </style>

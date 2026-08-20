@@ -1,31 +1,19 @@
 <template>
   <el-container>
-    <el-header style="" class="header-info">
-      <div class="item active">
-        基于Github的图床
+    <el-header class="header-info">
+      <div class="toggle-btn" @click="toggleSidebar">
+        <i :class="isCollapse ? 'el-icon-s-unfold' : 'el-icon-s-fold'"></i>
       </div>
+      <div class="item active">基于Github的图床</div>
       <el-divider direction="vertical"></el-divider>
       <div class="item">
-       <a target="_black" href="https://wishmelz.github.io/imgur"> 基于imgur的图床</a>
+        <a target="_black" href="https://wishmelz.github.io/imgur">基于imgur的图床</a>
       </div>
     </el-header>
     <el-container>
-      <el-aside width="200px">
-        <a target="_black" href="https://github.com/WishMelz">
-          <div class="avarat">
-            <img
-              src="https://avatars.githubusercontent.com/u/46024400?v=4"
-              alt=""
-            />
-            <span>WishMelz</span>
-          </div>
-        </a>
-        <!-- <a target="_black" href="https://wishmelz.github.io/imgur">
-          <div class="imgur">
-            Imgur
-          </div>
-        </a> -->
+      <el-aside :width="isCollapse ? '64px' : '200px'" class="sidebar-aside">
         <el-menu
+          :collapse="isCollapse"
           default-active="2"
           class="el-menu-vertical-demo"
           background-color="#545c64"
@@ -51,15 +39,13 @@
           </el-menu-item>
           <el-menu-item @click="closeToken">
             <i class="el-icon-error"></i>
-             <span slot="title">清除Token(退出)</span>
+            <span slot="title">清除Token(退出)</span>
           </el-menu-item>
         </el-menu>
       </el-aside>
       <el-container>
         <el-main>
-          <!-- <keep-alive> -->
           <router-view />
-          <!-- </keep-alive> -->
         </el-main>
         <el-footer></el-footer>
       </el-container>
@@ -69,13 +55,32 @@
 
 <script>
 export default {
+  data() {
+    return {
+      isCollapse: false
+    };
+  },
+  mounted() {
+    if (window.innerWidth <= 768) {
+      this.isCollapse = true;
+    }
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize);
+  },
   methods: {
+    toggleSidebar() {
+      this.isCollapse = !this.isCollapse;
+    },
+    handleResize() {
+      if (window.innerWidth <= 768) {
+        this.isCollapse = true;
+      }
+    },
     closeToken() {
       localStorage.removeItem('vuex');
       this.$router.push("/");
-    },
-    goGithub() {
-      location.href = "";
     },
   },
 };
@@ -87,49 +92,17 @@ section {
 }
 .el-aside {
   background: #555c63;
-  position: relative;
 }
 .el-header {
   background: #555c63;
 }
-.link {
-  font-size: 14px;
-  font-weight: bold;
-  padding-left: 5px;
-}
-.avarat {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 70px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-top: 1px solid #ccc;
-  padding-top: 10px;
-}
-.avarat img {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  margin-right: 5px;
-}
-.avarat span {
-  color: #fff;
-  font-weight: bold;
-  font-size: 14px;
-}
-.imgur {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 140px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: bold;
+.toggle-btn {
+  cursor: pointer;
   font-size: 20px;
+  color: #fff;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
 }
 .header-info {
   line-height: 60px;
@@ -138,10 +111,6 @@ section {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-.header-info .item {
-
-  /* margin-right: 30px; */
 }
 .header-info .item a {
   color: #eee;
@@ -153,5 +122,20 @@ section {
 .active {
   font-weight: bold;
   color: #fff;
+}
+.el-menu-vertical-demo:not(.el-menu--collapse) {
+  width: 200px;
+  min-height: 400px;
+}
+@media (max-width: 768px) {
+  .header-info {
+    padding: 0 10px;
+  }
+  .header-info .item {
+    font-size: 12px;
+  }
+  .el-main {
+    padding: 10px;
+  }
 }
 </style>

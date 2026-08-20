@@ -36,7 +36,7 @@
     </el-row>
     <el-divider></el-divider>
     <el-row>
-      <el-col :span="16" class="resimg">
+      <el-col :span="24" :md="16" class="resimg">
         <el-input v-model="resData[0]">
           <template slot="prepend">GitHub</template>
           <template slot="append">
@@ -223,6 +223,9 @@ export default {
 .tag-group .el-tag {
   margin-right: 10px;
 }
+.tag-group .el-input {
+  margin-top: 5px;
+}
 .resimg img {
   max-width: 100%;
   max-height: 100%;
@@ -232,5 +235,18 @@ export default {
 }
 .imgbox {
   text-align: center;
+}
+@media (max-width: 768px) {
+  .tag-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .tag-group .el-tag {
+    margin-bottom: 5px;
+  }
+  .tag-group .el-input {
+    width: 100% !important;
+  }
 }
 </style>

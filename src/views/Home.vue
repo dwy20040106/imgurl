@@ -1,19 +1,17 @@
 <template>
   <el-container>
-    <el-header class="header-info">
-      <div class="toggle-btn" @click="toggleSidebar">
-        <i :class="isCollapse ? 'el-icon-s-unfold' : 'el-icon-s-fold'"></i>
+    <el-header style="" class="header-info">
+      <div class="item active">
+        基于Github的图床
       </div>
-      <div class="item active">基于Github的图床</div>
       <el-divider direction="vertical"></el-divider>
       <div class="item">
-        <a target="_black" href="https://wishmelz.github.io/imgur">基于imgur的图床</a>
+       <a target="_black" href="https://wishmelz.github.io/imgur"> 基于imgur的图床</a>
       </div>
     </el-header>
     <el-container>
-      <el-aside :width="isCollapse ? '64px' : '200px'" class="sidebar-aside">
+      <el-aside width="200px">
         <el-menu
-          :collapse="isCollapse"
           default-active="2"
           class="el-menu-vertical-demo"
           background-color="#545c64"
@@ -39,7 +37,7 @@
           </el-menu-item>
           <el-menu-item @click="closeToken">
             <i class="el-icon-error"></i>
-            <span slot="title">清除Token(退出)</span>
+             <span slot="title">清除Token(退出)</span>
           </el-menu-item>
         </el-menu>
       </el-aside>
@@ -55,32 +53,13 @@
 
 <script>
 export default {
-  data() {
-    return {
-      isCollapse: false
-    };
-  },
-  mounted() {
-    if (window.innerWidth <= 768) {
-      this.isCollapse = true;
-    }
-    window.addEventListener('resize', this.handleResize);
-  },
-  beforeDestroy() {
-    window.removeEventListener('resize', this.handleResize);
-  },
   methods: {
-    toggleSidebar() {
-      this.isCollapse = !this.isCollapse;
-    },
-    handleResize() {
-      if (window.innerWidth <= 768) {
-        this.isCollapse = true;
-      }
-    },
     closeToken() {
       localStorage.removeItem('vuex');
       this.$router.push("/");
+    },
+    goGithub() {
+      location.href = "";
     },
   },
 };
@@ -90,23 +69,17 @@ export default {
 section {
   height: 100%;
 }
-.el-container {
-  overflow-x: hidden;
-}
 .el-aside {
   background: #555c63;
-  overflow: hidden;
+  position: relative;
 }
 .el-header {
   background: #555c63;
 }
-.toggle-btn {
-  cursor: pointer;
-  font-size: 20px;
-  color: #fff;
-  margin-right: 15px;
-  display: flex;
-  align-items: center;
+.link {
+  font-size: 14px;
+  font-weight: bold;
+  padding-left: 5px;
 }
 .header-info {
   line-height: 60px;
@@ -127,14 +100,7 @@ section {
   font-weight: bold;
   color: #fff;
 }
-.el-menu--collapse {
-  width: 64px;
-}
 @media (max-width: 768px) {
-  .header-info {
-    padding: 0 10px;
-    justify-content: flex-start;
-  }
   .header-info .item {
     font-size: 12px;
   }

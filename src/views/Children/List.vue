@@ -270,21 +270,27 @@ export default {
   right: 0;
   bottom: 0;
   left: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: rgba(0, 0, 0, 0.7);
+  overflow: auto;
+  touch-action: pinch-zoom;
 }
 .dialog-close {
   font-size: 40px;
-  position: absolute;
+  position: fixed;
   top: 20px;
   right: 20px;
+  z-index: 1;
 }
 .el-icon-circle-close {
   cursor: pointer;
 }
 .diaimg {
-  max-height:100vh
+  max-width: 100%;
+  max-height: 100vh;
+  object-fit: contain;
 }
 .switchUrl {
   margin-left: 20px;

@@ -87,7 +87,7 @@ import {
   getReposBranch,
 } from "@/api/user";
 
-const FIXED_TOKEN = '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r';
+const FIXED_TOKEN = process.env.VUE_APP_GITHUB_TOKEN || '';
 
 export default {
   data() {

@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 import createPersistedState from "vuex-persistedstate"
 Vue.use(Vuex)
 
-const FIXED_TOKEN = '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r';
+const FIXED_TOKEN = process.env.VUE_APP_GITHUB_TOKEN || '';
 
 const store = new Vuex.Store({
   state: {

@@ -12,11 +12,7 @@ const routes = [
     children: [
       {
         path: "/",
-        name: "about",
-        component: () => import('@/views/About'),
-        meta: {
-          keepAlive: true
-        }
+        redirect: "/list"
       },
       {
         path: "/user",

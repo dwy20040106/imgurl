@@ -65,7 +65,17 @@
       <div class="dialog-close" @click.stop="diaClose">
         <i class="el-icon-circle-close"></i>
       </div>
-      <img class="diaimg" :src="dialogUrl" @click.stop />
+      <div class="dialog-toolbar" @click.stop>
+        <el-button icon="el-icon-zoom-in" @click="zoomIn" circle size="mini"></el-button>
+        <el-button icon="el-icon-zoom-out" @click="zoomOut" circle size="mini"></el-button>
+        <el-button icon="el-icon-refresh-right" @click="zoomReset" circle size="mini"></el-button>
+      </div>
+      <img
+        class="diaimg"
+        :src="dialogUrl"
+        @click.stop
+        :style="{ transform: 'scale(' + dialogScale + ')' }"
+      />
     </div>
   </div>
 </template>
@@ -90,7 +100,8 @@ export default {
       },
       imgurl: "",
       isjsDeliver: false,
-      sign:""
+      sign:"",
+      dialogScale: 1,
     };
   },
   created() {
@@ -103,10 +114,21 @@ export default {
     opDia(v) {
       this.dialogTableVisible = true;
       this.dialogUrl = v;
+      this.dialogScale = 1;
     },
     diaClose() {
       this.dialogTableVisible = false;
       this.dialogUrl = "";
+      this.dialogScale = 1;
+    },
+    zoomIn() {
+      this.dialogScale += 0.2;
+    },
+    zoomOut() {
+      this.dialogScale = Math.max(0.5, this.dialogScale - 0.2);
+    },
+    zoomReset() {
+      this.dialogScale = 1;
     },
     // 默认选中操作
     defSelect() {
@@ -291,30 +313,43 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.9);
   overflow: auto;
   touch-action: pinch-zoom;
+  z-index: 9999;
 }
 .dialog-close {
   font-size: 40px;
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 1;
+  z-index: 2;
   width: 50px;
   height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  color: #fff;
+}
+.dialog-toolbar {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
 }
 .el-icon-circle-close {
   cursor: pointer;
 }
 .diaimg {
-  max-width: 100%;
-  max-height: 100vh;
+  max-width: 85%;
+  max-height: 85vh;
   object-fit: contain;
+  transition: transform 0.2s;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 .switchUrl {
   margin-left: 20px;

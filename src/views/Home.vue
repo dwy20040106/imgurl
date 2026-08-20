@@ -10,8 +10,9 @@
       </div>
     </el-header>
     <el-container>
-      <el-aside width="200px">
+      <el-aside :width="isCollapse ? '64px' : '200px'" class="sidebar-aside">
         <el-menu
+          :collapse="isCollapse"
           default-active="2"
           class="el-menu-vertical-demo"
           background-color="#545c64"
@@ -37,9 +38,13 @@
           </el-menu-item>
           <el-menu-item @click="closeToken">
             <i class="el-icon-error"></i>
-             <span slot="title">清除Token(退出)</span>
+             <span slot="title">退出</span>
           </el-menu-item>
         </el-menu>
+        <div class="toggle-btn" @click="toggleSidebar">
+          <i :class="isCollapse ? 'el-icon-d-arrow-right' : 'el-icon-d-arrow-left'"></i>
+          <span v-if="!isCollapse">收起</span>
+        </div>
       </el-aside>
       <el-container>
         <el-main>
@@ -53,13 +58,32 @@
 
 <script>
 export default {
+  data() {
+    return {
+      isCollapse: false
+    };
+  },
+  mounted() {
+    if (window.innerWidth <= 768) {
+      this.isCollapse = true;
+    }
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize);
+  },
   methods: {
+    toggleSidebar() {
+      this.isCollapse = !this.isCollapse;
+    },
+    handleResize() {
+      if (window.innerWidth <= 768) {
+        this.isCollapse = true;
+      }
+    },
     closeToken() {
       localStorage.removeItem('vuex');
       this.$router.push("/");
-    },
-    goGithub() {
-      location.href = "";
     },
   },
 };
@@ -69,17 +93,14 @@ export default {
 section {
   height: 100%;
 }
-.el-aside {
+.sidebar-aside {
   background: #555c63;
   position: relative;
+  transition: width 0.3s;
+  overflow: hidden;
 }
 .el-header {
   background: #555c63;
-}
-.link {
-  font-size: 14px;
-  font-weight: bold;
-  padding-left: 5px;
 }
 .header-info {
   line-height: 60px;
@@ -99,6 +120,31 @@ section {
 .active {
   font-weight: bold;
   color: #fff;
+}
+.toggle-btn {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-top: 1px solid #666;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  background: #555c63;
+}
+.toggle-btn:hover {
+  background: #4a5158;
+}
+.toggle-btn i {
+  font-size: 16px;
+}
+.el-menu-vertical-demo:not(.el-menu--collapse) {
+  width: 200px;
 }
 @media (max-width: 768px) {
   .header-info .item {

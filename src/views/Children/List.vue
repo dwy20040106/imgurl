@@ -44,7 +44,7 @@
           </div>
           <el-image
             @click="opDia(imgurl + v.path)"
-            style="width: 200px; height: 200px; cursor: pointer"
+            class="list-img"
             :src="isjsDeliver ? imgurl + v.path : v.download_url"
             fit="cover"
           ></el-image>
@@ -242,6 +242,11 @@ export default {
   box-shadow: 0 0 1px 0;
   position: relative;
 }
+.list-img {
+  width: 100%;
+  height: 200px;
+  cursor: pointer;
+}
 .imgerr {
   text-align: right;
   padding-bottom: 20px;
@@ -286,7 +291,7 @@ export default {
 }
 @media (max-width: 768px) {
   .item {
-    width: 150px;
+    width: calc(50% - 10px);
   }
   .el-select {
     width: 100%;

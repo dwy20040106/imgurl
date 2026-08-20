@@ -236,6 +236,10 @@ export default {
 .imgbox {
   text-align: center;
 }
+.imgbox .el-image img {
+  max-width: 100%;
+  height: auto;
+}
 @media (max-width: 768px) {
   .tag-group {
     display: flex;

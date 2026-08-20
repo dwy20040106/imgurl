@@ -90,8 +90,12 @@ export default {
 section {
   height: 100%;
 }
+.el-container {
+  overflow-x: hidden;
+}
 .el-aside {
   background: #555c63;
+  overflow: hidden;
 }
 .el-header {
   background: #555c63;
@@ -123,13 +127,13 @@ section {
   font-weight: bold;
   color: #fff;
 }
-.el-menu-vertical-demo:not(.el-menu--collapse) {
-  width: 200px;
-  min-height: 400px;
+.el-menu--collapse {
+  width: 64px;
 }
 @media (max-width: 768px) {
   .header-info {
     padding: 0 10px;
+    justify-content: flex-start;
   }
   .header-info .item {
     font-size: 12px;

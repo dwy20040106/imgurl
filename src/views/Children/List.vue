@@ -47,21 +47,25 @@
             class="list-img"
             :src="isjsDeliver ? imgurl + v.path : v.download_url"
             fit="cover"
+            lazy
           ></el-image>
-          <el-button size="mini" @click="copy(1, imgurl + v.path)"
-            >复制外链</el-button
-          >
-          <el-button size="mini" @click="copy(2, imgurl + v.path)"
-            >复制MD格式</el-button
-          >
+          <div class="file-name" :title="v.name">{{ v.name.length > 20 ? v.name.slice(0, 20) + '...' : v.name }}</div>
+          <div class="btn-group">
+            <el-tooltip content="复制外链" placement="top">
+              <el-button size="mini" icon="el-icon-link" @click="copy(1, imgurl + v.path)" circle></el-button>
+            </el-tooltip>
+            <el-tooltip content="复制MD格式" placement="top">
+              <el-button size="mini" icon="el-icon-document-copy" @click="copy(2, imgurl + v.path)" circle></el-button>
+            </el-tooltip>
+          </div>
         </div>
       </el-col>
     </el-row>
-    <div class="dialog" v-if="dialogTableVisible">
-      <div class="dialog-close">
-        <i @click="diaClose" class="el-icon-circle-close"></i>
+    <div class="dialog" v-if="dialogTableVisible" @click="diaClose">
+      <div class="dialog-close" @click.stop="diaClose">
+        <i class="el-icon-circle-close"></i>
       </div>
-      <img class="diaimg" @click="diaClose" :src="dialogUrl" />
+      <img class="diaimg" :src="dialogUrl" @click.stop />
     </div>
   </div>
 </template>
@@ -247,6 +251,20 @@ export default {
   height: 200px;
   cursor: pointer;
 }
+.file-name {
+  font-size: 12px;
+  color: #666;
+  padding: 4px 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.btn-group {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 2px;
+}
 .imgerr {
   text-align: right;
   padding-bottom: 20px;
@@ -283,6 +301,12 @@ export default {
   top: 20px;
   right: 20px;
   z-index: 1;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 .el-icon-circle-close {
   cursor: pointer;

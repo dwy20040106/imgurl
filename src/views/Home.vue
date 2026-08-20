@@ -2,11 +2,7 @@
   <el-container>
     <el-header style="" class="header-info">
       <div class="item active">
-        基于Github的图床
-      </div>
-      <el-divider direction="vertical"></el-divider>
-      <div class="item">
-       <a target="_black" href="https://wishmelz.github.io/imgur"> 基于imgur的图床</a>
+        图床
       </div>
     </el-header>
     <el-container>
